@@ -1,0 +1,150 @@
+Tras unos ajustes al codigo inicial, tenemos un metodo para comprobar que el funcionamiento de este es correcto.
+
+Este metodo se aplica al final de cada filtro, y muestra una seccion de la matriz resultante con dicho filtro aplicado.
+
+Estos cambios, para mayor aplicacion y por ende mejor visualización de los efectos del codigo resulta en un incremento del tamaño de los filtros, que augmenta la complejidad del codigo.
+
+el nuevo calculo se aproxima a 
+W = Width = N
+H = Height = N
+ImageSize = W*H*3
+FilterSize = 5*5
+Nfilters = 2
+ImageSize*FilterSize*Nfilters =N*3*25*2 = 150*N^2
+
+
+Respecto al codigo original subido tambien se han arreglado alguna otra funcionalidad, pero estas no alteran demasiado la complejidad del codigo, los cambios son principalmente en la manera de ver los resultados, la seed para que la visualizacion sea correcta, y, este si es un cambio importante, faltaba un swap de apuntadores al final del bucle interno (este cambio no es computacionalmente costoso, pero cambia totalmente el resultado, pues anteriormente no era el desado).
+
+La comprovacion de que el codigo es correcto se efectua con un vistazo a una zona de la matriz, en que hay una variacion numerica, de manera que reacciona a los filtros y genera una "mancha" que es la funcionalidad de esta concatenacion de filtros. la mancha en las medidas 5kx5k se ve tal que:
+
+Iteracio filtre: 1
+ 
+Valor en checkpoint:
+255	255	255	255	255	255	255	255	255	255	255	255	255	255	255	
+255	255	255	255	255	255	255	255	255	255	255	255	255	255	255	
+255	255	255	255	255	255	255	255	255	255	255	255	255	255	255	
+255	255	255	255	255	255	255	255	249	242	242	239	255	255	255	
+255	255	255	255	255	255	255	255	255	246	255	233	255	255	255	
+255	255	255	255	255	255	255	255	253	223	243	236	255	255	255	
+255	255	255	255	255	255	255	244	228	224	252	255	255	255	255	
+255	255	255	255	255	255	255	255	255	255	255	255	255	255	255	
+255	255	255	255	255	255	255	255	255	255	255	255	255	255	255	
+255	255	255	255	255	255	255	255	255	255	255	255	255	255	255	
+255	255	255	255	255	255	255	255	255	255	255	255	255	255	255	
+255	255	255	255	255	255	255	255	255	255	255	255	255	255	255	
+255	255	255	255	255	255	255	255	255	255	255	255	255	255	255	
+255	255	255	255	255	255	255	255	255	255	255	255	255	255	255	
+255	255	255	255	255	255	255	255	255	255	255	255	255	255	255	
+Iteracio filtre: 2
+ 
+Valor en checkpoint:
+0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	
+0	0	0	0	0	0	6	19	32	48	48	42	29	16	0	
+0	0	0	0	0	0	6	28	41	79	79	73	51	38	0	
+0	0	0	0	0	0	8	62	0	0	0	0	82	57	0	
+0	0	0	0	0	11	46	131	159	0	205	0	85	57	0	
+0	0	0	0	0	11	46	131	109	0	0	0	85	57	0	
+0	0	0	0	0	11	40	0	0	0	82	128	56	41	0	
+0	0	0	0	0	11	40	103	118	137	126	97	34	19	0	
+0	0	0	0	0	11	38	69	72	72	61	34	3	0	0	
+0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	
+0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	
+0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	
+0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	
+0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	
+0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	
+
+y la existencia de esta mancha con la seed determinada sera el punto por el que determinaremos si nuestros cambios hacen que el codigo no haga lo que queremos.
+
+Con estas aclaraciones previas, empezamos:
+(los datos siguientes son tomados de la maquina personal, no se pueden extraer ciclos ni instrucciones ya que el 
+entorno virtualizado en el que se hacen las ejecuciones no tiene compatibilidad con este tipo de funciones)
+
+De momento compilamos el codigo con: 
+gcc -Ofast Code.c -o exec
+
+Con una perfilacion inicial del codigo obtenemos que este, con unos valores de la matriz de 1Kx1K necesita 
+0.18s, como en esta maquina personal los resultados pueden tener ciertas variaciones, ampliamos al segundo tamaño
+
+En la maquina del laboratorio 
+0.28s
+
+
+para apreciar mejor los resultados de futuras optimizaciones.
+
+Con una perfilacion a unos valores de 10Kx10K, el programa necesita
+56,37s
+
+De momento:
+Maquina Personal
+W=H=N			Temps		IPC
+1k			0,18s
+10k			56,37s
+
+Maquina laboratorio			
+1k			0.28s		1,72
+10k			22.12s		1,65
+
+
+Si echamos un vistazo al codigo, se puede apreciar que el bucle que recorre la matriz la recorre, en el mas interno, de arriba a abajo, esto muy probablemente no sea eficiente en memoria, pues los accesos no contiguos no permiten cosas como por ejemplo la vectorizacion, y entorpecen los accesos a cache.
+
+Este es un problema bastante grave, y probablemente el bottleneck inicial del programa, asi que 
+intercambiamos las lineas 57 y 58 tal que:
+Antes:
+57 for (int x = 0; x < w; x++)
+58             for (int y = 0; y < h; y++)
+            
+Despues:
+57 for (int y = 0; y < h; y++)
+58             for (int x = 0; x < w; x++)
+
+Con lo que pasamos a:
+
+Maquina Personal
+W=H=N			Temps		IPC
+1k			0,13s
+10k			12,24s
+
+Maquina Laboratorio
+1k			0,24s		2.06
+10k			18,9s		2.11
+ y guardamos este codigo como Cmod1.c
+
+Si nos fijamos en la diferencia en ambas maquinas, el resultado es sorprendente, pues en una tenemos un speedup del  4,6x pero en la otra apenas del 1.16.
+Esto seguramente se deba a las caches i los accesos a memoria, puesto que es el motivo de este cambio, pero en ambos casos, el programa sigue sin vectorizar-se.
+
+
+Si seguimos mirando, vemos que en el calculo de los filtros, se calculan las posiciones x e y en el bucle mas interno,
+pero la y (imageY) se puede calcular fuera. Es probable que el compilador haya notado este cambio, pero como esta ahora el codigo sera problematico de visualizar.
+
+Dividimos el codigo en funciones, asegurandonos no alterar la funcion del codigo, con esto creamos las funciones 
+apply_filter()
+Truncate()
+y
+printCheckpoint()
+lo guardamos como CMod2.c
+
+
+Este programa vuelve a los tiempos originales, pero con un IPC de 2.07, esto se debe al overhead de las funciones y las llamadas, pero de momento sera mas util tener el codigo fragmentado.
+
+y ahora si, procedemos a echar un vistazo a la distribucion de la carga de nuestro codigo, 
+asi como a el codigo ensamblador independiente de cada funcion.
+Vemos que la funcion apply_filter() se lleva el  81% de instrucciones [appendedImg0] y un 80% de los ciclos[appendedImg01] cosa que ya sospechabamos que pasaria, 
+pues es donde se ejecuta el calculo casi en su totalidad.
+
+
+Si entramos en el codigo ensamblador de la funcion apply_filter(), vemos que, el compilador no solo ha sacado el calculo de imageY fuera del bucle, si no ha desenrollado completamente el bucle, de manera que hay un solo bucle en vez de dos [appendedImg1].
+
+Ahora con el problema de la vectorizacion.
+Si miramos el bucle mas interno, podemos apreciar que se calcula tres cosas en este bucle, los colores rojo, verde y azul. Este calculo no parece optimo, pues calculamos los puntos de cada matriz a la vez, de manera que perjudica nuestra localidad espacial. no solo esto, si no que en los bordes los calculos son distintos, ya que utilizamos los puntos opuestos al final de la matriz.
+
+La solucion a este problema, puede pasar por un loop blocking, en el que separamos el calculo del borde,
+y ademas podemos enrollar el bucle para que ejecute los calculos de red, green y blue de uno en uno.
+
+Al desenrollar el bucle pasamos de 22.74s a 18.42s, con unos IPCs de 2.06 y 2.14
+de estos numeros podemos sacar que el programa genera muchas menos instrucciones, y gana un poco de tiempo con ello.
+
+
+
+
+
