@@ -39,14 +39,68 @@ int main(int argc, char* argv[])
     double bias = 0.0;
     //load the image into the buffer
     int *image = (int*)malloc(sizeof(int) * 3 * w * h);
-    int *result = (int*)malloc(sizeof(int) * 3 * (w-4) * (h-4));
+    int *result = (int*)malloc(sizeof(int) * 3 * w * h);
     int *temp = NULL;
     //loadImage(image, w, h, "pics/photo3.png");
+/*
     srand(seed);
     for (int k = 0; k < 3; k++)
         for (int i = 2; i < h-2; i++)
             for (int j = 2; j < w-2; j++)
                 image[(k * h * w) + i * w + j] = rand() % 255;
+	*/
+   for (int k = 0; k < 3; k++)
+        for (int i = 0; i < h; i++)
+            for (int j = 0; j < w; j++)
+                image[(k * h * w) + i * w + j] =0;
+
+
+
+
+        image[w*6+4] = 200;
+        image[w*6+5] = 200;
+        image[w*6+6] = 200;
+        image[w*6+7] = 200;
+        image[w*6+8] = 200;
+        image[w*6+9] = 200;
+        image[w*6+10] = 200;
+
+        image[w*7+4] = 200;
+        image[w*7+10] = 200;
+
+        image[w*8+4] = 200;
+        image[w*8+10] = 200;
+
+        image[w*9+4] = 200;
+        image[w*9+5] = 200;
+        image[w*9+6] = 200;
+        image[w*9+7] = 200;
+        image[w*9+8] = 200;
+        image[w*9+9] = 200;
+        image[w*9+10] = 200;
+
+
+        printf("Valor Inicial:\n");
+        for (int checkY = 0; checkY < CheckSize; checkY++)
+        {
+            for (int checkX = 0; checkX < CheckSize; checkX++)
+                printf("%d	",image[w*(checkY)+(checkX)]);
+            printf("\n");
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     int weight = w-4;
     int height = h-4;
@@ -71,6 +125,15 @@ int main(int argc, char* argv[])
                 image[(k * h * w) + (h+i-2) * w + j]= image[(k * h * w) + (i+2) * w + j] ;
 
 
+        printf("Valor expanded:\n");
+        for (int checkY = 0; checkY < CheckSize; checkY++)
+        {
+            for (int checkX = 0; checkX < CheckSize; checkX++)
+                printf("%d	",image[w*(checkY)+(checkX)]);
+            printf("\n");
+        }
+
+
     for (int nFilters = 0; nFilters <= 1; nFilters++) {
         
 
@@ -93,13 +156,9 @@ int main(int argc, char* argv[])
                     }
 
                 //truncate values smaller than zero and larger than 255
-		int cx = x-2;
-		int cy = y-2;
-		int cw = w-4;
-		int ch = h-4;
-                result[cy * cw + cx] = MIN(MAX(factor[nFilters] * red + bias, 0), 255);
-                result[cw * ch + cy * cw + cx] = MIN(MAX(factor[nFilters] * green + bias, 0), 255);
-                result[cw * ch * 2 + cy * cw + cx]= MIN(MAX(factor[nFilters] * blue + bias, 0), 255);
+                result[y * w + x] = MIN(MAX(factor[nFilters] * red + bias, 0), 255);
+                result[w * h + y * w + x] = MIN(MAX(factor[nFilters] * green + bias, 0), 255);
+                result[w * h * 2 + y * w + x]= MIN(MAX(factor[nFilters] * blue + bias, 0), 255);
             }
         //draw the specified points
         printf("Iteracio filtre: %d\n \n",nFilters+1);

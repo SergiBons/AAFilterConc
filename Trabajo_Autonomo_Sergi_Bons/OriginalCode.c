@@ -43,10 +43,45 @@ int main(int argc, char* argv[])
     int *temp = NULL;
     //loadImage(image, w, h, "pics/photo3.png");
     srand(seed);
+    /*
     for (int k = 0; k < 3; k++)
         for (int i = 0; i < h; i++)
             for (int j = 0; j < w; j++)
                 image[(k * h * w) + i * w + j] = rand() % 255;
+	*/
+   for (int k = 0; k < 3; k++)
+        for (int i = 0; i < h; i++)
+            for (int j = 0; j < w; j++)
+                image[(k * h * w) + i * w + j] =0;
+
+
+
+
+        image[w*6+4] = 200;
+        image[w*6+5] = 200;
+        image[w*6+6] = 200;
+        image[w*6+7] = 200;
+        image[w*6+8] = 200;
+        image[w*6+9] = 200;
+        image[w*6+10] = 200;
+
+        image[w*7+4] = 200;
+        image[w*7+10] = 200;
+
+        image[w*8+4] = 200;
+        image[w*8+10] = 200;
+
+        image[w*9+4] = 200;
+        image[w*9+5] = 200;
+        image[w*9+6] = 200;
+        image[w*9+7] = 200;
+        image[w*9+8] = 200;
+        image[w*9+9] = 200;
+        image[w*9+10] = 200;
+	
+
+
+
     int weight = w;
     int height = h;
     printf("w = %d,  h = %d   \n", weight ,height);
