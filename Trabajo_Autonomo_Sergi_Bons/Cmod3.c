@@ -56,8 +56,8 @@ int main(int argc, char* argv[])
 
 
         //apply the filter
-        for (int x = 0; x < w; x++)
-            for (int y = 0; y < h; y++)
+        for (int y = 2; y < h-2; y++)
+            for (int x = 2; x < w-2; x++)
             {
                 int red = 0, green = 0, blue = 0;
 
@@ -65,8 +65,8 @@ int main(int argc, char* argv[])
                 for (int filterY = 0; filterY < filterHeight; filterY++)
                     for (int filterX = 0; filterX < filterWidth; filterX++)
                     {
-                        int imageX = (x - filterWidth / 2 + filterX + w) % w;
-                        int imageY = (y - filterHeight / 2 + filterY + h) % h;
+                        int imageX = (x - filterWidth / 2 + filterX);
+                        int imageY = (y - filterHeight / 2 + filterY);
                         red += image[imageY * w + imageX] * filter[nFilters][filterY][filterX];
                         green += image[w*h+imageY * w + imageX] * filter[nFilters][filterY][filterX];
                         blue += image[w*h*2+imageY * w + imageX] * filter[nFilters][filterY][filterX];

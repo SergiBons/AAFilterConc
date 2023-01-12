@@ -56,8 +56,8 @@ int main(int argc, char* argv[])
 
 
         //apply the filter
-        for (int x = 0; x < w; x++)
-            for (int y = 0; y < h; y++)
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
             {
                 int red = 0, green = 0, blue = 0;
 
