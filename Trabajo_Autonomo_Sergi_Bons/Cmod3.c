@@ -35,8 +35,8 @@ int main(int argc, char* argv[])
     };
 
 
-    double factor[2] = {(1.0 / 25.0), 1.0};
-    double bias = 0.0;
+    float factor[2] = {(1.0 / 25.0), 1.0};
+    float bias = 0.0;
     //load the image into the buffer
     int *image = (int*)malloc(sizeof(int) * 3 * w * h);
     int *result = (int*)malloc(sizeof(int) * 3 * w * h);
@@ -56,28 +56,62 @@ int main(int argc, char* argv[])
 
 
         //apply the filter
-        for (int y = 2; y < h-2; y++)
-            for (int x = 2; x < w-2; x++)
-            {
-                int red = 0, green = 0, blue = 0;
+        	for (int y = 2; y < h-2; y++)
+            		for (int x = 2; x < w-2; x++)
+            		{
+                		int color = 0;
+		                //multiply every value of the filter with corresponding image pixel
+		                for (int filterY = 0; filterY < filterHeight; filterY++)
+				{
+		                    for (int filterX = 0; filterX < filterWidth; filterX++)
+       			             {
+					int imageY = (y - filterHeight / 2 + filterY);
+		                        int imageX = (x - filterWidth / 2 + filterX);
+                		        color += image[imageY * w + imageX] * filter[nFilters][filterY][filterX];
+                		    }
+				}
+	                	//truncate values smaller than zero and larger than 255
+        	        	result[ y * w + x] = MIN(MAX(factor[nFilters]*color+bias, 0), 255);
+            		}
+                  for (int y = 2; y < h-2; y++)
+                        for (int x = 2; x < w-2; x++)
+                        {
+                                int color = 0;
+                                //multiply every value of the filter with corresponding image pixel
+                                for (int filterY = 0; filterY < filterHeight; filterY++)
+                                {
+                                    for (int filterX = 0; filterX < filterWidth; filterX++)
+                                     {
+                                        int imageY = (y - filterHeight / 2 + filterY);
+                                        int imageX = (x - filterWidth / 2 + filterX);
+                                        color += image[w*h+imageY * w + imageX] * filter[nFilters][filterY][filterX];
+                                    }
+                                }
+                                //truncate values smaller than zero and larger than 255
+                                result[w*h + y * w + x] = MIN(MAX(factor[nFilters]*color+bias, 0), 255);
+                        }
 
-                //multiply every value of the filter with corresponding image pixel
-                for (int filterY = 0; filterY < filterHeight; filterY++)
-                    for (int filterX = 0; filterX < filterWidth; filterX++)
-                    {
-                        int imageX = (x - filterWidth / 2 + filterX);
-                        int imageY = (y - filterHeight / 2 + filterY);
-                        red += image[imageY * w + imageX] * filter[nFilters][filterY][filterX];
-                        green += image[w*h+imageY * w + imageX] * filter[nFilters][filterY][filterX];
-                        blue += image[w*h*2+imageY * w + imageX] * filter[nFilters][filterY][filterX];
-                    }
+		    for (int y = 2; y < h-2; y++)
+                        for (int x = 2; x < w-2; x++)
+                        {
+                                int color = 0;
+                                //multiply every value of the filter with corresponding image pixel
+                                for (int filterY = 0; filterY < filterHeight; filterY++)
+                                {
+                                    for (int filterX = 0; filterX < filterWidth; filterX++)
+                                     {
+                                        int imageY = (y - filterHeight / 2 + filterY);
+                                        int imageX = (x - filterWidth / 2 + filterX);
+                                        color += image[w*h*2 +imageY * w + imageX] * filter[nFilters][filterY][filterX];
+                                    }
+                                }
+                                //truncate values smaller than zero and larger than 255
+                                result[w*h*2 + y * w + x] = MIN(MAX(factor[nFilters]*color+bias, 0), 255);
+                        }
 
-                //truncate values smaller than zero and larger than 255
-                result[y * w + x] = MIN(MAX(factor[nFilters] * red + bias, 0), 255);
-                result[w * h + y * w + x] = MIN(MAX(factor[nFilters] * green + bias, 0), 255);
-                result[w * h * 2 + y * w + x]= MIN(MAX(factor[nFilters] * blue + bias, 0), 255);
-            }
-        //draw the specified points
+
+
+	//draw the specified points
         printf("Iteracio filtre: %d\n \n",nFilters+1);
 	printf("Valor en checkpoint:\n");
 	for (int checkY = 0; checkY < CheckSize; checkY++)

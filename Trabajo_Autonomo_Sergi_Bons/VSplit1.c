@@ -12,8 +12,8 @@ All rights reserved.
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define filterWidth 5
 #define filterHeight 5
-#define w 10000
-#define h 10000
+#define w 25000
+#define h 25000
 #define seed 101010
 #define CheckSize 15
 
@@ -99,9 +99,10 @@ int main(int argc, char* argv[])
 
     for (int nFilters = 0; nFilters <= 1; nFilters++) {
         
-
+	#pragma omp parallel
+{
 	//Treat edges
-	#pragma omp parallel for
+	#pragma omp for
         for (int y = 0; y < 2; y++)
             for (int x = 0; x < w; x++)
             {
@@ -123,7 +124,7 @@ int main(int argc, char* argv[])
                 result[w * h + y * w + x] = MIN(MAX(factor[nFilters] * green + bias, 0), 255);
                 result[w * h * 2 + y * w + x]= MIN(MAX(factor[nFilters] * blue + bias, 0), 255);
             }
-	#pragma omp parallel for
+	#pragma omp for
 	for (int y = h-3; y < h; y++)
             for (int x = 0; x < w; x++)
             {
@@ -145,7 +146,7 @@ int main(int argc, char* argv[])
                 result[w * h + y * w + x] = MIN(MAX(factor[nFilters] * green + bias, 0), 255);
                 result[w * h * 2 + y * w + x]= MIN(MAX(factor[nFilters] * blue + bias, 0), 255);
             }
-	#pragma omp parallel for
+	#pragma omp for
         for (int y = 0; y < h; y++)
             for (int x = 0; x < 2; x++)
             {
@@ -167,7 +168,7 @@ int main(int argc, char* argv[])
                 result[w * h + y * w + x] = MIN(MAX(factor[nFilters] * green + bias, 0), 255);
                 result[w * h * 2 + y * w + x]= MIN(MAX(factor[nFilters] * blue + bias, 0), 255);
             }
-	#pragma omp parallel for
+	#pragma omp for
         for (int y = 0; y < h; y++)
             for (int x = w-3; x < w; x++)
             {
@@ -191,7 +192,7 @@ int main(int argc, char* argv[])
             }
 
         //apply the filter
-	#pragma omp parallel for
+	#pragma omp for
         for (int y = 2; y < h-2; y++)
             for (int x = 2; x < w-2; x++)
             {
@@ -213,6 +214,7 @@ int main(int argc, char* argv[])
                 result[w * h + y * w + x] = MIN(MAX(factor[nFilters] * green + bias, 0), 255);
                 result[w * h * 2 + y * w + x]= MIN(MAX(factor[nFilters] * blue + bias, 0), 255);
             }
+}
         //draw the specified points
         printf("Iteracio filtre: %d\n \n",nFilters+1);
 	printf("Valor en checkpoint:\n");
@@ -225,6 +227,7 @@ int main(int argc, char* argv[])
         temp = result;
         result = image;
         image = temp;
-    }
+ 
+   }
 
 }

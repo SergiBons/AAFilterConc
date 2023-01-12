@@ -12,8 +12,8 @@ All rights reserved.
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 #define filterWidth 5
 #define filterHeight 5
-#define w 10004
-#define h 10004
+#define w 25004
+#define h 25004
 #define seed 101010
 #define CheckSize 15
 
@@ -42,6 +42,7 @@ int main(int argc, char* argv[])
     int *result = (int*)malloc(sizeof(int) * 3 * w * h);
     int *temp = NULL;
     //loadImage(image, w, h, "pics/photo3.png");
+
     srand(seed);
     for (int k = 0; k < 3; k++)
         for (int i = 2; i < h-2; i++)
@@ -77,16 +78,7 @@ int main(int argc, char* argv[])
         image[w*9+8] = 200;
         image[w*9+9] = 200;
         image[w*9+10] = 200;
-*/
-
-        printf("Valor Inicial:\n");
-        for (int checkY = 0; checkY < CheckSize; checkY++)
-        {
-            for (int checkX = 0; checkX < CheckSize; checkX++)
-                printf("%d	",image[w*(checkY)+(checkX)]);
-            printf("\n");
-        }
-
+	*/
 
 
 
@@ -104,39 +96,35 @@ int main(int argc, char* argv[])
     int weight = w-4;
     int height = h-4;
     printf("w = %d + 4,  h = %d + 4   \n", weight ,height);
+    
+    #pragma omp parallel
+{
+    #pragma omp single
+{
+    #pragma omp taskloop
     for (int k = 0; k < 3; k++)
         for (int i = 0; i < h; i++)
             for (int j = 0; j < 2; j++)
                 image[(k * h * w) + i * w + j]= image[(k * h * w) + i * w + w-4+j];
+    #pragma omp taskloop
     for (int k = 0; k < 3; k++)
         for (int i = 0; i < h; i++)
             for (int j = 0; j < 2; j++)
                 image[(k * h * w) + i * w + (w+j-2)]=  image[(k * h * w) + i * w + j+2] ;
-
+    #pragma omp taskloop
     for (int k = 0; k < 3; k++)
         for (int i = 0; i < 2; i++)
             for (int j = 0; j < w; j++)
                 image[(k*h*w) +i*w + j]= image[(k * h * w) + (h+i-4) * w + j];
-
+    #pragma omp taskloop
     for (int k = 0; k < 3; k++)
         for (int i = 0; i < 2; i++)
             for (int j = 0; j < w; j++)
                 image[(k * h * w) + (h+i-2) * w + j]= image[(k * h * w) + (i+2) * w + j] ;
 
-
-        printf("Valor expanded:\n");
-        for (int checkY = 0; checkY < CheckSize; checkY++)
-        {
-            for (int checkX = 0; checkX < CheckSize; checkX++)
-                printf("%d	",image[w*(checkY)+(checkX)]);
-            printf("\n");
-        }
-
-
+   #pragma omp taskwait
     for (int nFilters = 0; nFilters <= 1; nFilters++) {
-        
-
-
+	#pragma omp taskloop
         //apply the filter
         for (int y = 2; y < h-2; y++)
             for (int x = 2; x < w-2; x++)
@@ -173,5 +161,6 @@ int main(int argc, char* argv[])
         result = image;
         image = temp;
     }
-
+}
+}
 }
